@@ -2,20 +2,23 @@ import Vue from 'vue'
 import App from './App.vue'
 import store from './store'
 
+import AboutVue from './views/About.vue'
+
 Vue.config.productionTip = false
+
+const routes = {
+  '/': App,
+  '/about': AboutVue
+}
 
 new Vue({
   store,
-<<<<<<< HEAD
-  render: h => h(App)
-=======
   data: {
     currentRoute: window.location.pathname
   },
   mounted() {
     document.addEventListener('astilectron-ready', () => {
       this.listen();
-      this.send();
     })
   },
   computed: {
@@ -35,5 +38,4 @@ new Vue({
     }
   },
   render(h) { return h(this.ViewComponent) }
->>>>>>> 35eae05... WIP
 }).$mount('#app')
