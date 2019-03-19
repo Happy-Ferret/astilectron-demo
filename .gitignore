@@ -1,0 +1,6 @@
+*.syso
+bind_*.go
+
+resources/app/
+output/
+todo/dist/
