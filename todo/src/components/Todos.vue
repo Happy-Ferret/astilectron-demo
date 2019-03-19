@@ -7,7 +7,12 @@
       <div class="row">
         <form @submit.prevent="submitTodo" class="col s6 offset-s3">
           <div class="input-field">
-            <input v-model="newTodo" id="icon_prefix2" class="form-control" placeholder="What needs to be done?"/>
+            <input
+              v-model="newTodo"
+              id="icon_prefix2"
+              class="form-control"
+              placeholder="What needs to be done?"
+            >
           </div>
           <button class="btn btn-primary col s12">Add</button>
         </form>
@@ -15,19 +20,24 @@
       <div class="row">
         <ul class="collection col s6 offset-s3">
           <li class="collection-item" v-for="todo in todos" :key="todo.id">
-              <p>
-                <input type="checkbox" class="checkbox-round" :checked=todo.done @change="todo.done = !todo.done" />
-                <label for="checkbox"></label>
-                <del v-if="todo.done">
-                  <span>{{todo.title}}</span>
-                </del>
-                <span v-else>{{todo.title}}</span>
-                <span class="delete">
-                  <a @click.prevent="deleteTodo(todo)">
-                    <font-awesome-icon :icon="[ 'fa', 'trash' ]"/>
-                  </a>
-                </span>
-              </p>
+            <p>
+              <input
+                type="checkbox"
+                class="checkbox-round"
+                :checked="todo.done"
+                @change="todo.done = !todo.done"
+              >
+              <label for="checkbox"></label>
+              <del v-if="todo.done">
+                <span>{{todo.title}}</span>
+              </del>
+              <span v-else>{{todo.title}}</span>
+              <span class="delete">
+                <a @click.prevent="deleteTodo(todo)">
+                  <font-awesome-icon :icon="[ 'fa', 'trash' ]"/>
+                </a>
+              </span>
+            </p>
           </li>
         </ul>
       </div>
@@ -63,11 +73,20 @@ export default {
         title: this.newTodo,
         done: false
       });
+      this.send(this.newTodo);
       this.newTodo = "";
     },
     deleteTodo(todo) {
       const todoIndex = this.todos.indexOf(todo);
       this.todos.splice(todoIndex, 1);
+    },
+    send(todo) {
+      astilectron.sendMessage(
+        { name: "create", payload: todo },
+        function(message) {
+          console.log("received " + message);
+        }
+      );
     }
   }
 };
