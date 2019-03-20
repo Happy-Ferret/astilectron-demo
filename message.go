@@ -3,7 +3,6 @@ package main
 import (
 
 	"encoding/json"
-	
 	"github.com/asticode/go-astilectron"
 	"github.com/asticode/go-astilectron-bootstrap"
 
@@ -20,8 +19,23 @@ func handleMessages(_ *astilectron.Window, m bootstrap.MessageIn) (payload inter
 				payload = err.Error()
 				return
 			}
-			insert(title)
+			id := insert(title)
+			payload = id
+			return
 		}
+	case "delete":
+		var id int
+		if len(m.Payload) > 0 {
+			// Unmarshal payload
+			if err = json.Unmarshal(m.Payload, &id); err != nil {
+				payload = err.Error()
+				return
+			}
+			delete(id)
+		}
+	case "getTodos":
+		payload = Todos
+		return
 	}
 	return
 }

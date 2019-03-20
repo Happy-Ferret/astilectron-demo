@@ -2,19 +2,26 @@ package main
 
 import (
 	"database/sql"
-	"os"
 
 	"github.com/asticode/go-astilog"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+// Todo represents a single todo.
+type Todo struct {
+	ID    int    `json:"id"`
+	Title string `json:"title"`
+	Done  int    `json:"done"`
+}
+
+// Todos is a slice of all todos.
+var Todos []Todo
 
 var index = 0
 var db *sql.DB
 var err error
 
 func initDB() {
-	os.Remove("./todos.db")
-
 	db, err = sql.Open("sqlite3", "./todos.db")
 	if err != nil {
 		astilog.Error(err)
@@ -24,7 +31,7 @@ func initDB() {
 	// defer db.Close()
 
 	sqlStmt := `
-	create table todos (id integer not null primary key, title text, done integer);
+	create table if not exists todos (id integer not null primary key, title text, done integer);
 	`
 	_, err = db.Exec(sqlStmt)
 	if err != nil {
@@ -35,18 +42,59 @@ func initDB() {
 	// insert("Hallo Welt")
 	// insert("Hello World!")
 	// insert("Bonjour le monde")
+	getAll()
+	setIndex()
 }
 
-func insert(title string) {
+func insert(title string) (id int) {
 	tx, err := db.Begin()
 	if err != nil {
 		astilog.Error(err)
 	}
-	stmt, err := tx.Exec("insert into todos(id, title, done) values($1, $2, 0)", index, title)
+	_, err = tx.Exec("insert into todos(id, title, done) values($1, $2, 0)", index+1, title)
 	if err != nil {
 		astilog.Error(err)
 	}
-	astilog.Error(stmt)
+	// astilog.Error(stmt)
 	tx.Commit()
 	index++
+	return index
+}
+
+func delete(id int) {
+	tx, err := db.Begin()
+	if err != nil {
+		astilog.Error(err)
+	}
+	_, err = tx.Exec("delete from todos where id = $1", id)
+	if err != nil {
+		astilog.Error(err)
+	}
+	// astilog.Error(stmt)
+	tx.Commit()
+	index++
+}
+
+func getAll() {
+	rows, err := db.Query("select id, title, done from todos")
+	if err != nil {
+		astilog.Error(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id int
+		var title string
+		var done int
+		err := rows.Scan(&id, &title, &done)
+		if err != nil {
+			astilog.Error(err)
+		}
+		Todos = append(Todos, Todo{id, title, done})
+	}
+}
+
+func setIndex() {
+	for _, todo := range Todos {
+		index = todo.ID
+	}
 }

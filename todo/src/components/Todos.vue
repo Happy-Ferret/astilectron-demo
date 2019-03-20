@@ -63,31 +63,35 @@ export default {
     }
   },
   mounted() {
-    if (localStorage.todos) {
-      this.todos = JSON.parse(localStorage.todos);
-    }
+    document.addEventListener("astilectron-ready", () => {
+      astilectron.sendMessage({ name: "getTodos" }, message => {
+        if (message.payload != null) this.todos = message.payload;
+      });
+    });
   },
   methods: {
     submitTodo() {
-      this.todos.push({
-        title: this.newTodo,
-        done: false
-      });
-      this.send(this.newTodo);
-      this.newTodo = "";
+      astilectron.sendMessage(
+        { name: "create", payload: this.newTodo },
+        message => {
+          this.todos.push({
+            title: this.newTodo,
+            done: false,
+            id: message.payload
+          });
+          this.newTodo = "";
+        }
+      );
     },
     deleteTodo(todo) {
       const todoIndex = this.todos.indexOf(todo);
       this.todos.splice(todoIndex, 1);
-    },
-    send(todo) {
       astilectron.sendMessage(
-        { name: "create", payload: todo },
-        function(message) {
-          console.log("received " + message);
-        }
+        { name: "delete", payload: todo.id },
+        message => {}
       );
-    }
+    },
+    send(todo) {}
   }
 };
 </script>
