@@ -25,7 +25,7 @@
                 type="checkbox"
                 class="checkbox-round"
                 :checked="todo.done"
-                @change="todo.done = !todo.done"
+                @change="todo.done = !todo.done; update(todo)"
               >
               <label for="checkbox"></label>
               <del v-if="todo.done">
@@ -53,14 +53,6 @@ export default {
       todos: [],
       newTodo: ""
     };
-  },
-  watch: {
-    todos: {
-      handler() {
-        localStorage.todos = JSON.stringify(this.todos);
-      },
-      deep: true
-    }
   },
   mounted() {
     document.addEventListener("astilectron-ready", () => {
@@ -91,7 +83,12 @@ export default {
         message => {}
       );
     },
-    send(todo) {}
+    update(todo) {
+      astilectron.sendMessage(
+        { name: "update", payload: { done: todo.done, id: todo.id } },
+        message => {}
+      );
+    }
   }
 };
 </script>

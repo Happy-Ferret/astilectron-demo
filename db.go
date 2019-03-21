@@ -11,7 +11,7 @@ import (
 type Todo struct {
 	ID    int    `json:"id"`
 	Title string `json:"title"`
-	Done  int    `json:"done"`
+	Done  bool   `json:"done"`
 }
 
 // Todos is a slice of all todos.
@@ -55,7 +55,6 @@ func insert(title string) (id int) {
 	if err != nil {
 		astilog.Error(err)
 	}
-	// astilog.Error(stmt)
 	tx.Commit()
 	index++
 	return index
@@ -70,9 +69,20 @@ func delete(id int) {
 	if err != nil {
 		astilog.Error(err)
 	}
-	// astilog.Error(stmt)
 	tx.Commit()
 	index++
+}
+
+func update (done int, id int) {
+	tx, err := db.Begin()
+	if err != nil {
+		astilog.Error(err)
+	}
+	_, err = tx.Exec("Update todos set done = $1 where id = $2", done, id)
+	if err != nil {
+		astilog.Error(err)
+	}
+	tx.Commit()
 }
 
 func getAll() {
@@ -89,7 +99,7 @@ func getAll() {
 		if err != nil {
 			astilog.Error(err)
 		}
-		Todos = append(Todos, Todo{id, title, done})
+		Todos = append(Todos, Todo{id, title, _intToBool(done)})
 	}
 }
 
@@ -97,4 +107,12 @@ func setIndex() {
 	for _, todo := range Todos {
 		index = todo.ID
 	}
+}
+
+func _boolToInt(boolean interface{}) int {
+	return (map[interface{}]int{false: 0, true: 1})[boolean]
+}
+
+func _intToBool(integer interface{}) bool {
+	return (map[interface{}]bool{0: false, 1: true})[integer]
 }
