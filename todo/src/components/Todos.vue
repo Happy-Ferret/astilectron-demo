@@ -19,7 +19,7 @@
       </div>
       <div class="row">
         <ul class="collection col s6 offset-s3">
-          <li class="collection-item" v-for="todo in todos" :key="todo.id">
+          <li class="collection-item" v-for="todo in $store.getters.todos" :key="todo.id">
             <p>
               <input
                 type="checkbox"
@@ -50,44 +50,24 @@ export default {
   name: "app",
   data() {
     return {
-      todos: [],
       newTodo: ""
     };
   },
   mounted() {
-    document.addEventListener("astilectron-ready", () => {
-      astilectron.sendMessage({ name: "getTodos" }, message => {
-        if (message.payload != null) this.todos = message.payload;
-      });
-    });
+    this.$store.commit("fetchTodos");
   },
   methods: {
     submitTodo() {
-      astilectron.sendMessage(
-        { name: "create", payload: this.newTodo },
-        message => {
-          this.todos.push({
-            title: this.newTodo,
-            done: false,
-            id: message.payload
-          });
-          this.newTodo = "";
-        }
-      );
+      this.$store.commit("addTodo", {
+        title: this.newTodo
+      });
+      this.newTodo = "";
     },
     deleteTodo(todo) {
-      const todoIndex = this.todos.indexOf(todo);
-      this.todos.splice(todoIndex, 1);
-      astilectron.sendMessage(
-        { name: "delete", payload: todo.id },
-        message => {}
-      );
+      this.$store.commit("removeTodo", todo);
     },
     update(todo) {
-      astilectron.sendMessage(
-        { name: "update", payload: { done: todo.done, id: todo.id } },
-        message => {}
-      );
+      this.$store.commit("updateTodo", todo);
     }
   }
 };
